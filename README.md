@@ -1,29 +1,65 @@
-# README #
+# PHP Modest Wrapper #
 
-This README would normally document whatever steps are necessary to get your application up and running.
+This is PHP wrapper (or binding) for fast HTML renderer [Modest](https://github.com/lexborisov/Modest).
 
-### What is this repository for? ###
+## Synopsys ##
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+```php
+$html = <<<EOHTML
+<html>
+<header><title>Duracell Batteries</title></header>
+<body>
+    <a href="/spark/ref=nav_upnav_merged_T1_Detail">From The Community</a>
+    <a href="/ref=nav_logo" class="nav-logo-link" tabindex="6">Amazon</a>
+</body>
+</html>
+EOHTML;
 
-### How do I get set up? ###
+$doc = ModestDocument($html);
 
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
+$t = $doc->find("title");
+echo "Title: " . $t->item(0).text() . "\n";
 
-### Contribution guidelines ###
+$refs = $doc->find("a");
+echo "Found " . $refs->count() . " refs\n";
 
-* Writing tests
-* Code review
-* Other guidelines
+foreach($refs as $a) {
+    echo "  - " . $a->attr("href") . "\n";
+    echo "    " . $a->innerHTML() . "\n";
+}
 
-### Who do I talk to? ###
+```
 
-* Repo owner or admin
-* Other community or team contact
+## Installation ##
+
+### Prerequisites ###
+
+* GNU Make
+* gcc
+* PHP + PHP devel (5.6 and 7.1 tested)
+* autoconf
+
+### Build ###
+
+```bash
+git clone https://github.com/lexborisov/Modest.git
+make -C Modest
+phpize5.6
+./configure --enable-modest --with-php-config=php-config5.6 CPPFLAGS="-IModest/include" LDFLAGS="-LModest/lib"
+make
+php5.6 -d "extension=modules/modest.so" test.php
+```
+
+## Implemented Methods ##
+
+ModestDocument(<html_string>) - document constructor.
+
+Node (and Document) methods:
+
+* find(<selector>)
+* innerHTML()
+* next()
+* outerHTML()
+* previous()
+* text()
+
