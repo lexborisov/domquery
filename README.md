@@ -15,7 +15,7 @@ $html = <<<EOHTML
 </html>
 EOHTML;
 
-$doc = ModestDocument($html);
+$doc = new ModestDocument($html);
 
 $t = $doc->find("title");
 echo "Title: " . $t->item(0).text() . "\n";
