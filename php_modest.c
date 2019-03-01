@@ -527,8 +527,13 @@ void nodelist_dtor(zend_object *object TSRMLS_DC)
     mycss_entry_t *css = get_doc_by_ref(&nodelist->document)->css;
 
     myhtml_collection_destroy(nodelist->collection);
-    mycss_selectors_list_destroy(mycss_entry_selectors(css),
-        nodelist->selectors_list, true);
+
+    mycss_selectors_t *selectors = mycss_entry_selectors(css);
+
+    if (selectors != NULL) {
+        mycss_selectors_list_destroy(selectors,
+            nodelist->selectors_list, true);
+    }
 
     doc_ref_delete(&nodelist->document);
 }
