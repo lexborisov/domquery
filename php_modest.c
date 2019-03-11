@@ -592,6 +592,10 @@ PHP_METHOD(NodeList, item)
         return;
     }
 
+    if (index >= nodelist->collection->length) {
+        return;
+    }
+
     object_init_ex(return_value, node_ce);
     n = get_node_object(return_value);
 
