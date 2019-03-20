@@ -144,6 +144,13 @@ inline nodelist_object *get_nodelist_object(zval *object) {
 
 
 static
+inline int chk_node_valid(myhtml_tree_node_t *n) {
+    // this is not 100% accurate, but should work
+    return n != NULL && n->parent != NULL;
+}
+
+
+static
 void document_dtor(zend_object *object TSRMLS_DC)
 {
     document_object *doc = (document_object *) object;
@@ -518,6 +525,15 @@ PHP_METHOD(Node, previous)
     prev->node = node->node->prev;
 }
 
+PHP_METHOD(Node, remove)
+{
+    node_object *node = get_node_object(getThis());
+
+    if (chk_node_valid(node->node)) {
+        myhtml_node_delete_recursive(node->node);
+    }
+}
+
 
 static
 void nodelist_dtor(zend_object *object TSRMLS_DC)
@@ -602,6 +618,21 @@ PHP_METHOD(NodeList, item)
     doc_ref_copy(&n->document, &nodelist->document);
 
     n->node = nodelist->collection->list[index];
+}
+
+PHP_METHOD(NodeList, remove)
+{
+    nodelist_object *nodelist = get_nodelist_object(getThis());
+    myhtml_tree_node_t *n;
+    size_t i;
+
+    for (i = 0; i < nodelist->collection->length; i++) {
+        n = nodelist->collection->list[i];
+
+        if (chk_node_valid(n)) {
+            myhtml_node_delete_recursive(n);
+        }
+    }
 }
 
 
@@ -780,6 +811,7 @@ const zend_function_entry node_methods[] = {
     PHP_ME(Node,  attr,       arginfo_attr, ZEND_ACC_PUBLIC)
     PHP_ME(Node,  next,       arginfo_none, ZEND_ACC_PUBLIC)
     PHP_ME(Node,  previous,   arginfo_none, ZEND_ACC_PUBLIC)
+    PHP_ME(Node,  remove,     arginfo_none, ZEND_ACC_PUBLIC)
     PHP_FE_END
 };
 
@@ -809,6 +841,7 @@ static
 const zend_function_entry nodelist_methods[] = {
     PHP_ME(NodeList,  count,  arginfo_none,           ZEND_ACC_PUBLIC)
     PHP_ME(NodeList,  item,   arginfo_nodelist_item,  ZEND_ACC_PUBLIC)
+    PHP_ME(NodeList,  remove, arginfo_none,           ZEND_ACC_PUBLIC)
     PHP_FE_END
 };
 

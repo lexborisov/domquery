@@ -20,6 +20,17 @@ foreach($files as $file) {
     $t = 0;
 
     $refs = $document->find("a");
+    $refs_count = $refs->count();
+    echo "refs->count() = " . $refs->count() . "\n";
+
+    $refs->item(0)->remove();
+
+    $refs = $document->find("a");
+    echo "refs->count() = " . $refs->count() . "\n";
+
+    $refs->remove();
+
+    $refs = $document->find("a");
     echo "refs->count() = " . $refs->count() . "\n";
 
     $n = 0;
