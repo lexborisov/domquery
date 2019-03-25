@@ -270,8 +270,6 @@ PHP_METHOD(Document, __construct)
     } else {
         myencoding_t headers_encoding;
         if (myencoding_extracting_character_encoding_from_charset(headers, headers_len, &headers_encoding)) {
-            printf("document %p construct: found encoding in headers %d\n", doc, headers_encoding);
-
             encoding = headers_encoding;
             meta_scan = false;
         }
@@ -286,7 +284,6 @@ PHP_METHOD(Document, __construct)
 
         myencoding_t meta_encoding = myencoding_prescan_stream_to_determine_encoding(body, scan_size);
         if (meta_encoding != MyENCODING_NOT_DETERMINED) {
-            printf("document %p construct: found encoding in meta %d\n", doc, meta_encoding);
             encoding = meta_encoding;
         }
     }
