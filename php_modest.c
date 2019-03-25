@@ -254,12 +254,43 @@ PHP_METHOD(Document, __construct)
 
     // printf("document %p construct\n", doc);
 
-    char *value = NULL;
-    str_size_t value_len;
+    char *body = NULL;
+    str_size_t body_len;
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &value, &value_len) == FAILURE) {
-        return;
+    char *headers = NULL;
+    str_size_t headers_len;
+
+    myencoding_t encoding = MyENCODING_UTF_8;
+    bool meta_scan = true;
+
+    if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), "ss", &body, &body_len, &headers, &headers_len) == FAILURE) {
+        if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &body, &body_len) == FAILURE) {
+            return;
+        }
+    } else {
+        myencoding_t headers_encoding;
+        if (myencoding_extracting_character_encoding_from_charset(headers, headers_len, &headers_encoding)) {
+            printf("document %p construct: found encoding in headers %d\n", doc, headers_encoding);
+
+            encoding = headers_encoding;
+            meta_scan = false;
+        }
     }
+
+    if (meta_scan) {
+        str_size_t scan_size = 1024;
+
+        if (scan_size > body_len) {
+            scan_size = body_len;
+        }
+
+        myencoding_t meta_encoding = myencoding_prescan_stream_to_determine_encoding(body, scan_size);
+        if (meta_encoding != MyENCODING_NOT_DETERMINED) {
+            printf("document %p construct: found encoding in meta %d\n", doc, meta_encoding);
+            encoding = meta_encoding;
+        }
+    }
+
 
     doc->css = create_css_parser();
     doc->finder = modest_finder_create_simple();
@@ -272,7 +303,7 @@ PHP_METHOD(Document, __construct)
 
     // printf("%p parse %d bytes document ... \n", doc, (int) value_len);
 
-    myhtml_parse(doc->tree, MyENCODING_UTF_8, value, value_len);
+    myhtml_parse(doc->tree, encoding, body, body_len);
 
     doc->node = doc->tree->node_html;
 
